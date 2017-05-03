@@ -7,6 +7,7 @@
             type="password"
             name="password"
             label="Password "
+            :rules="errors"
             v-model="user.password"
             required
           ></v-text-field>
@@ -24,7 +25,7 @@
         </v-col>
       </v-row>
       <v-btn success block dark large @click.native="save">Change</v-btn>
-      <v-alert success dismissible v-model="success.show">{{ success.message }}</v-alert>
+      <v-alert info v-model="success.show">{{ success.message }}</v-alert>
     </v-card-text>
   </v-card>
 </template>
@@ -49,7 +50,7 @@ export default {
     }
   },
   created () {
-    this.user.reset_password_token = this.$route.query
+    this.user.reset_password_token = this.$route.query.reset_password_token
   },
   methods: {
     save () {

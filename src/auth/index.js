@@ -28,7 +28,7 @@ export default {
 
   logout (context, options) {
     context.$http.delete('users/sign_out', options)
-      .then(data => {
+      .then(() => {
         localStorage.removeItem('token')
         this.user.authenticated = false
         router.push({path: '/login'})
@@ -40,7 +40,7 @@ export default {
   forgotPassword (context, data) {
     this.reset(context)
     context.$http.post('users/password', data, { headers: { Authorization: null } })
-      .then((response) => {
+      .then(() => {
         context.info = {
           show: true,
           title: 'We just sent you a confirmation email!',
@@ -60,14 +60,22 @@ export default {
   changePassword (context, data) {
     this.reset(context)
     context.$http.put('users/password', data, { headers: { Authorization: null } })
-      .then((response) => {
+      .then(() => {
         context.success = {
           show: true,
           message: 'Your password was changed! Go back to login.'
         }
       })
       .catch((error) => {
-        context.errors.push(error.response.data)
+        if (error.response.data.reset_password_token) {
+          context.errors.push('Invalid token!')
+        } else if (error.response.data.password) {
+          context.errors.push(error.response.data.password[0])
+        } else if (error.response.data.password_confirmation) {
+          context.errors.push(error.response.data.password_confirmation[0])
+        } else {
+          context.errors.push(error.response.data)
+        }
       })
   },
 
