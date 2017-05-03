@@ -1,0 +1,71 @@
+<template>
+  <v-card class="password-edit">
+    <v-card-text>
+      <v-row row>
+        <v-col xs12>
+          <v-text-field
+            type="password"
+            name="password"
+            label="Password "
+            v-model="user.password"
+            required
+          ></v-text-field>
+        </v-col>
+      </v-row>
+      <v-row row>
+        <v-col xs12>
+          <v-text-field
+            type="password"
+            name="password_confirmation"
+            label="Password confirmation "
+            v-model="user.password_confirmation"
+            required
+          ></v-text-field>
+        </v-col>
+      </v-row>
+      <v-btn success block dark large @click.native="save">Change</v-btn>
+      <v-alert success dismissible v-model="success.show">{{ success.message }}</v-alert>
+    </v-card-text>
+  </v-card>
+</template>
+
+<script>
+import auth from '../auth'
+
+export default {
+  name: 'password-edit',
+  data () {
+    return {
+      errors: [],
+      success: {
+        show: false,
+        message: ''
+      },
+      user: {
+        password: '',
+        password_confirmation: '',
+        reset_password_token: ''
+      }
+    }
+  },
+  created () {
+    this.user.reset_password_token = this.$route.query
+  },
+  methods: {
+    save () {
+      auth.changePassword(this, { user: this.user })
+    }
+  }
+}
+</script>
+
+<style scoped>
+.password-edit {
+  width: 450px;
+  margin: 50px auto 0;
+}
+
+.input-group {
+  margin: 12px 0;
+}
+</style>
