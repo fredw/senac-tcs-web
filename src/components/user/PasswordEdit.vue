@@ -25,23 +25,20 @@
         </v-col>
       </v-row>
       <v-btn success block dark large @click.native="save">Change</v-btn>
-      <v-alert info v-model="success.show">{{ success.message }}</v-alert>
+      <v-alert info v-show="success">{{ success }}</v-alert>
     </v-card-text>
   </v-card>
 </template>
 
 <script>
-import auth from '../auth'
+import auth from '../../auth/index'
 
 export default {
   name: 'password-edit',
   data () {
     return {
       errors: [],
-      success: {
-        show: false,
-        message: ''
-      },
+      success: '',
       user: {
         password: '',
         password_confirmation: '',

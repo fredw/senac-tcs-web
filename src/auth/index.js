@@ -10,8 +10,8 @@ export default {
     context.$http.post('users/sign_in', data, { headers: { Authorization: null } })
       .then((response) => {
         localStorage.setItem('token', response.headers.authorization)
+        localStorage.setItem('user.id', response.data.data.id)
         this.user.authenticated = true
-        // context.user = response.body.data
         if (redirect) {
           router.push(redirect)
         }
@@ -26,8 +26,8 @@ export default {
       })
   },
 
-  logout (context, options) {
-    context.$http.delete('users/sign_out', options)
+  logout (context, data) {
+    context.$http.delete('users/sign_out', data)
       .then(() => {
         localStorage.removeItem('token')
         this.user.authenticated = false
@@ -48,7 +48,6 @@ export default {
         }
       })
       .catch((error) => {
-        // console.log(error.response)
         if (error.response.status === 401) {
           context.errors.push('Invalid e-mail!')
         } else {
@@ -61,10 +60,7 @@ export default {
     this.reset(context)
     context.$http.put('users/password', data, { headers: { Authorization: null } })
       .then(() => {
-        context.success = {
-          show: true,
-          message: 'Your password was changed! Go back to login.'
-        }
+        context.success = 'Your password was changed! Go back to login.'
       })
       .catch((error) => {
         if (error.response.data.reset_password_token) {
@@ -74,7 +70,28 @@ export default {
         } else if (error.response.data.password_confirmation) {
           context.errors.push(error.response.data.password_confirmation[0])
         } else {
-          context.errors.push(error.response.data)
+          context.errors.push('Unknow error!')
+        }
+      })
+  },
+
+  saveUser (context, data) {
+    context.errors = {
+      name: [],
+      password: []
+    }
+    context.success = ''
+    context.$http.put('users', data)
+      .then(() => {
+        context.success = 'Your info was changed!'
+      })
+      .catch((error) => {
+        if (error.response.data.name) {
+          context.errors.name.push(error.response.data.name[0])
+        } else if (error.response.data.current_password) {
+          context.errors.password.push(error.response.data.current_password[0])
+        } else {
+          context.errors.push('Unknow error!')
         }
       })
   },
@@ -89,10 +106,7 @@ export default {
       }
     }
     if (context.success) {
-      context.success = {
-        show: false,
-        message: ''
-      }
+      context.success = ''
     }
   }
 }

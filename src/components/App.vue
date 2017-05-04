@@ -10,7 +10,7 @@
         </v-btn>
         <v-list>
           <v-list-item>
-            <v-list-tile>
+            <v-list-tile to="user/edit">
               <v-list-tile-title>Change Account</v-list-tile-title>
             </v-list-tile>
             <v-list-tile v-if="user.authenticated" @click.native="logout">

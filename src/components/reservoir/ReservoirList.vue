@@ -1,19 +1,6 @@
 <template>
   <div class="reservoirs">
 
-    <!-- <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>Name</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="reservoir in reservoirs">
-          <td>{{ reservoir.attributes.name }}</td>
-        </tr>
-    </tbody>
-    </table> -->
-
     <v-data-table v-model="reservoirs" :headers="headers" hide-actions class="elevation-1">
       <template slot="items" scope="props">
         <td>{{ props.item.attributes.name }}</td>

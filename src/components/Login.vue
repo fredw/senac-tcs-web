@@ -27,7 +27,7 @@
       <v-row>
         <v-col xs12>
           <v-btn flat block small class="grey--text lighten-1" @click.native="forgotPassword">Forgot your password?</v-btn>
-          <v-alert info dismissible v-model="info.show">
+          <v-alert info dismissible v-show="info.title">
             <div>
               <strong>{{ info.title }}</strong><br/>
               {{ info.message }}
@@ -41,6 +41,7 @@
 
 <script>
 import auth from '../auth'
+import User from '../domain/user/User'
 
 export default {
   name: 'login',
@@ -48,14 +49,10 @@ export default {
     return {
       errors: [],
       info: {
-        show: false,
         title: '',
         message: ''
       },
-      user: {
-        email: '',
-        password: ''
-      }
+      user: new User()
     }
   },
   methods: {
