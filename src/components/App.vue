@@ -71,6 +71,10 @@ export default {
 </script>
 
 <style>
+body {
+  background: #eee;
+}
+
 #app .content {
   padding: 90px 0 15px;
   background: #eee;

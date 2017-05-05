@@ -49,14 +49,7 @@ export default {
     }
   },
   created () {
-    let id = localStorage.getItem('user.id')
-    this.$http.get(`users/${id}`)
-      .then((response) => {
-        this.user.name = response.data.data.attributes.name
-      })
-      .catch((error) => {
-        console.log(error.response)
-      })
+    this.user.name = auth.user.attributes.name
   },
   methods: {
     save () {

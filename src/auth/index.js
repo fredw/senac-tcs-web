@@ -2,7 +2,8 @@ import router from '../router'
 
 export default {
   user: {
-    authenticated: !!localStorage.getItem('token')
+    authenticated: !!localStorage.getItem('token'),
+    user: {}
   },
 
   login (context, data, redirect) {

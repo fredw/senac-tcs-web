@@ -1,14 +1,14 @@
 <template>
   <div class="reservoirs">
 
-    <v-data-table v-model="reservoirs" :headers="headers" hide-actions class="elevation-1">
-      <template slot="items" scope="props">
-        <td>{{ props.item.attributes.name }}</td>
-        <td>{{ props.item.attributes.description }}</td>
-      </template>
-    </v-data-table>
+    <!--<v-data-table v-model="reservoirs" :headers="headers" hide-actions class="elevation-1">-->
+      <!--<template slot="items" scope="props">-->
+        <!--<td>{{ props.item.attributes.name }}</td>-->
+        <!--<td>{{ props.item.attributes.description }}</td>-->
+      <!--</template>-->
+    <!--</v-data-table>-->
 
-    <br/><v-divider></v-divider><br/>
+    <v-alert warning v-show="reservoirs.length == 0" class="yellow darken-3">There are no registered reservoirs</v-alert>
 
     <v-row>
       <v-col xs12 sm6 md4 v-for="reservoir in reservoirs" :key="reservoir.id">
@@ -53,7 +53,7 @@
       </v-col>
     </v-row>
 
-    <v-pagination v-bind:length.number="4" v-model="page" circle />
+    <v-pagination :length.number="pageCount" v-model="page" v-show="reservoirs.length > 0" circle />
 
   </div>
 </template>
@@ -62,26 +62,32 @@
 export default {
   data () {
     return {
-      headers: [
-        {
-          text: 'Name',
-          value: 'name',
-          left: true
-        },
-        {
-          text: 'Description',
-          value: 'description',
-          left: true
-        }
-      ],
+//      headers: [
+//        {
+//          text: 'Name',
+//          value: 'name',
+//          left: true
+//        },
+//        {
+//          text: 'Description',
+//          value: 'description',
+//          left: true
+//        }
+//      ],
       reservoirs: [],
       page: 1,
-      perPage: 10,
+      perPage: 2,
+      pageCount: 0,
       search: ''
     }
   },
   created () {
     this.list()
+  },
+  watch: {
+    page: function () {
+      this.list()
+    }
   },
   methods: {
     list () {
@@ -89,7 +95,7 @@ export default {
         .then((response) => {
           this.reservoirs = response.data.data
           this.perPage = response.headers['per-page']
-          this.total = response.headers['total']
+          this.pageCount = Math.ceil(response.headers['total'] / this.perPage)
         })
         .catch((error) => {
           console.log(error.response)
