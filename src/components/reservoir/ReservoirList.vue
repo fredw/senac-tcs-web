@@ -1,14 +1,12 @@
 <template>
   <div class="reservoirs">
 
-    <!--<v-data-table v-model="reservoirs" :headers="headers" hide-actions class="elevation-1">-->
-      <!--<template slot="items" scope="props">-->
-        <!--<td>{{ props.item.attributes.name }}</td>-->
-        <!--<td>{{ props.item.attributes.description }}</td>-->
-      <!--</template>-->
-    <!--</v-data-table>-->
+    <v-breadcrumbs icons class="elevation-1">
+      <v-breadcrumbs-item href="/" target="_self">Home</v-breadcrumbs-item>
+      <v-breadcrumbs-item>Reservoirs</v-breadcrumbs-item>
+    </v-breadcrumbs>
 
-    <v-alert warning v-show="reservoirs.length == 0" class="yellow darken-3">There are no registered reservoirs</v-alert>
+    <v-alert warning v-show="reservoirs.length == 0 && loaded == true" class="yellow darken-3">There are no registered reservoirs</v-alert>
 
     <v-row>
       <v-col xs12 sm6 md4 v-for="reservoir in reservoirs" :key="reservoir.id">
@@ -16,38 +14,13 @@
           <v-card-row class="green darken-1">
             <v-card-title>
               <span class="white--text">{{ reservoir.attributes.name }}</span>
-              <!-- <v-spacer></v-spacer>
-              <div>
-                <v-menu id="marriot" bottom left origin="top right">
-                  <v-btn icon="icon" slot="activator" class="white--text">
-                    <v-icon>more_vert</v-icon>
-                  </v-btn>
-                  <v-list>
-                    <v-list-item>
-                      <v-list-tile>
-                        <v-list-tile-title>Never show rewards</v-list-tile-title>
-                      </v-list-tile>
-                    </v-list-item>
-                    <v-list-item>
-                      <v-list-tile>
-                        <v-list-tile-title>Remove Card</v-list-tile-title>
-                      </v-list-tile>
-                    </v-list-item>
-                    <v-list-item>
-                      <v-list-tile>
-                        <v-list-tile-title>Send Feedback</v-list-tile-title>
-                      </v-list-tile>
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
-              </div> -->
             </v-card-title>
           </v-card-row>
           <v-card-text>
-            <v-card-row height="90px">{{ reservoir.attributes.description }}</v-card-row>
+            <v-card-row class="description">{{ reservoir.attributes.description }}</v-card-row>
           </v-card-text>
           <v-card-row actions>
-            <v-btn flat class="green--text darken-1" to="/teste">View Devices</v-btn>
+            <v-btn flat class="green--text darken-1" :router="true" :href="{ name: 'device.list', params: { reservoir: reservoir.id } }">View Devices</v-btn>
           </v-card-row>
         </v-card>
       </v-col>
@@ -62,23 +35,11 @@
 export default {
   data () {
     return {
-//      headers: [
-//        {
-//          text: 'Name',
-//          value: 'name',
-//          left: true
-//        },
-//        {
-//          text: 'Description',
-//          value: 'description',
-//          left: true
-//        }
-//      ],
+      loaded: false,
       reservoirs: [],
       page: 1,
-      perPage: 2,
-      pageCount: 0,
-      search: ''
+      perPage: 3,
+      pageCount: 0
     }
   },
   created () {
@@ -91,22 +52,38 @@ export default {
   },
   methods: {
     list () {
-      this.$http.get(`reservoirs?page=${this.page}&per_page=${this.perPage}&search=${this.search}`)
+      this.$http.get(`reservoirs?page=${this.page}&per_page=${this.perPage}`)
         .then((response) => {
           this.reservoirs = response.data.data
           this.perPage = response.headers['per-page']
           this.pageCount = Math.ceil(response.headers['total'] / this.perPage)
         })
         .catch((error) => {
-          console.log(error.response)
+          console.log('Reservoirs request error!')
+          console.log(error)
+        })
+        .then(() => {
+          this.loaded = true
         })
     }
   }
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .reservoir {
   margin-bottom: 15px;
+
+  .description {
+    display: block;
+    display: -webkit-box;
+    margin: 0 auto;
+    height: 90px !important;
+    line-height: 1.4;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 </style>

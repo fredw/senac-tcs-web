@@ -57,7 +57,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .password-edit {
   width: 450px;
   margin: 50px auto 0;

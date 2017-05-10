@@ -30,9 +30,6 @@
             <v-list-tile to="/reservoirs">
               <v-list-tile-title>Reservoirs</v-list-tile-title>
             </v-list-tile>
-            <v-list-tile to="/teste">
-              <v-list-tile-title>Teste</v-list-tile-title>
-            </v-list-tile>
           </v-list-item>
         </v-list>
       </v-sidebar>
@@ -70,7 +67,7 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
 body {
   background: #eee;
 }
@@ -80,7 +77,24 @@ body {
   background: #eee;
 }
 
+/* Overwrite default styles */
+
 .sidebar {
   padding-top: 70px !important;
+}
+
+.breadcrumbs {
+  margin-bottom: 15px !important;
+  background-color: #fff;
+  justify-content: flex-start !important;
+}
+
+.pagination {
+  width: 100%;
+  justify-content: center;
+}
+
+.card__title {
+  letter-spacing: 0 !important;
 }
 </style>

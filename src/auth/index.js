@@ -34,7 +34,8 @@ export default {
         this.user.authenticated = false
         router.push({path: '/login'})
       }, error => {
-        console.log(error.message)
+        console.log('User signout error')
+        console.log(error)
       })
   },
 
