@@ -1,4 +1,4 @@
-import Vue from 'vue'
+/* import Vue from 'vue'
 import Hello from '@/components/Hello'
 
 describe('Hello.vue', () => {
@@ -8,4 +8,4 @@ describe('Hello.vue', () => {
     expect(vm.$el.querySelector('.hello h1').textContent)
       .to.equal('Welcome to Your Vue.js App')
   })
-})
+}) */
