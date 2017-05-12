@@ -21,7 +21,7 @@ Vue.axios.defaults.baseURL = process.env.API_URL
 router.beforeEach(function (to, from, next) {
   if (to.matched.some(record => record.meta.requiresAuth)) {
     let id = localStorage.getItem('user.id')
-    Vue.prototype.$http.get(`users/${id}`)
+    Vue.prototype.$http.get(`users/${id}`, null, { headers: { Authorization: localStorage.getItem('token') } })
       .then((response) => {
         auth.user = response.data.data
         next()

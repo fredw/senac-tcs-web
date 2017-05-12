@@ -1,6 +1,9 @@
 <template>
   <v-card class="login">
     <v-card-text>
+      <v-avatar>
+        <img src="/static/logo.png" width="150" height="150" alt="Water Reservoir">
+      </v-avatar>
       <v-row row>
         <v-col xs12>
           <v-text-field
@@ -8,6 +11,7 @@
             label="E-mail "
             v-model="user.email"
             :rules="errors"
+            @keyup.enter.prevent.native="authenticate"
             required
           ></v-text-field>
         </v-col>
@@ -19,6 +23,7 @@
             name="password"
             label="Password "
             v-model="user.password"
+            @keyup.enter.prevent.native="authenticate"
             required
           ></v-text-field>
         </v-col>
@@ -70,6 +75,16 @@ export default {
 .login {
   width: 450px;
   margin: 50px auto 0;
+}
+
+.avatar {
+  margin-bottom: 10px;
+
+  img {
+    width: 150px;
+    height: 150px;
+    border: 10px solid #f5f5f5;
+  }
 }
 
 .card {

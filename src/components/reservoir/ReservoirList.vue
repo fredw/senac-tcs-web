@@ -20,6 +20,13 @@
             <v-card-row class="description">{{ reservoir.attributes.description }}</v-card-row>
           </v-card-text>
           <v-card-row actions>
+            <v-chip class="grey lighten-4" v-if="reservoir.relationships['reservoir-group'].data" title="Reservoir Group">
+              <v-avatar>
+                <v-icon>group_work</v-icon>
+              </v-avatar>
+              {{ reservoirsGroups[reservoir.relationships['reservoir-group'].data.id].attributes.name }}
+            </v-chip>
+            <v-spacer></v-spacer>
             <v-btn flat class="green--text darken-1" :router="true" :href="{ name: 'device.list', params: { reservoir: reservoir.id } }">View Devices</v-btn>
           </v-card-row>
         </v-card>
@@ -37,8 +44,9 @@ export default {
     return {
       loaded: false,
       reservoirs: [],
+      reservoirsGroups: [],
       page: 1,
-      perPage: 3,
+      perPage: 6,
       pageCount: 0
     }
   },
@@ -57,6 +65,11 @@ export default {
           this.reservoirs = response.data.data
           this.perPage = response.headers['per-page']
           this.pageCount = Math.ceil(response.headers['total'] / this.perPage)
+
+          let reservoirsGroups = response.data.included.filter((object) => object.type === 'reservoir-groups')
+          reservoirsGroups.forEach((reservoirGroup) => {
+            this.reservoirsGroups[reservoirGroup.id] = reservoirGroup
+          })
         })
         .catch((error) => {
           console.log('Reservoirs request error!')
@@ -84,6 +97,16 @@ export default {
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  .chip {
+    margin: 0;
+    font-size: .8em;
+
+    .avatar {
+      margin-right: 1px;
+      color: #dcdcdc;
+    }
   }
 }
 </style>

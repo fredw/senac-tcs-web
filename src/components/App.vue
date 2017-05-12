@@ -1,10 +1,10 @@
 <template>
   <v-app id="app" top-toolbar sidebar-under-toolbar>
     <v-toolbar class="blue" fixed>
-      <v-toolbar-side-icon v-if="user.authenticated" @click.native.stop="nav = !nav" />
+      <v-toolbar-side-icon v-if="authenticated" @click.native.stop="nav = !nav" />
       <v-toolbar-title class="hidden-sm-and-down">{{ title }}</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-menu v-if="user.authenticated" bottom origin="top right" transition="v-scale-transition">
+      <v-menu v-if="authenticated" bottom origin="top right" transition="v-scale-transition">
         <v-btn icon dark slot="activator">
           <v-icon>account_circle</v-icon>
         </v-btn>
@@ -13,7 +13,7 @@
             <v-list-tile to="user/edit">
               <v-list-tile-title>Change Account</v-list-tile-title>
             </v-list-tile>
-            <v-list-tile v-if="user.authenticated" @click.native="logout">
+            <v-list-tile @click.native="logout">
               <v-list-tile-title>Log Out</v-list-tile-title>
             </v-list-tile>
           </v-list-item>
@@ -21,7 +21,7 @@
       </v-menu>
     </v-toolbar>
     <main>
-      <v-sidebar drawer v-model="nav" height="100%" v-if="user.authenticated">
+      <v-sidebar drawer v-model="nav" height="100%" v-if="authenticated">
         <v-list dense>
           <v-list-item>
             <v-list-tile to="/">
@@ -51,7 +51,7 @@ export default {
     return {
       title: 'Water Reservoir',
       nav: null,
-      user: auth.user
+      authenticated: auth.user.authenticated
     }
   },
   created () {
@@ -69,7 +69,7 @@ export default {
 
 <style lang="scss">
 body {
-  background: #eee;
+  background: #eee !important;
 }
 
 #app .content {

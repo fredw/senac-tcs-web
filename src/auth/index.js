@@ -3,7 +3,7 @@ import router from '../router'
 export default {
   user: {
     authenticated: !!localStorage.getItem('token'),
-    user: {}
+    user: null
   },
 
   login (context, data, redirect) {
@@ -31,7 +31,9 @@ export default {
     context.$http.delete('users/sign_out', data)
       .then(() => {
         localStorage.removeItem('token')
+        localStorage.removeItem('user.id')
         this.user.authenticated = false
+        this.user.user = null
         router.push({path: '/login'})
       }, error => {
         console.log('User signout error')
