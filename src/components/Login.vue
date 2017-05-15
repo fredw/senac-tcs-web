@@ -1,6 +1,9 @@
 <template>
   <v-card class="login">
     <v-card-text>
+      <v-avatar>
+        <img src="/static/logo.png" width="150" height="150" alt="Water Reservoir">
+      </v-avatar>
       <v-row row>
         <v-col xs12>
           <v-text-field
@@ -8,6 +11,7 @@
             label="E-mail "
             v-model="user.email"
             :rules="errors"
+            @keyup.enter.prevent.native="authenticate"
             required
           ></v-text-field>
         </v-col>
@@ -19,6 +23,7 @@
             name="password"
             label="Password "
             v-model="user.password"
+            @keyup.enter.prevent.native="authenticate"
             required
           ></v-text-field>
         </v-col>
@@ -27,7 +32,7 @@
       <v-row>
         <v-col xs12>
           <v-btn flat block small class="grey--text lighten-1" @click.native="forgotPassword">Forgot your password?</v-btn>
-          <v-alert info dismissible v-model="info.show">
+          <v-alert info dismissible v-show="info.title">
             <div>
               <strong>{{ info.title }}</strong><br/>
               {{ info.message }}
@@ -41,6 +46,7 @@
 
 <script>
 import auth from '../auth'
+import User from '../domain/user/User'
 
 export default {
   name: 'login',
@@ -48,14 +54,10 @@ export default {
     return {
       errors: [],
       info: {
-        show: false,
         title: '',
         message: ''
       },
-      user: {
-        email: '',
-        password: ''
-      }
+      user: new User()
     }
   },
   methods: {
@@ -69,10 +71,20 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .login {
   width: 450px;
   margin: 50px auto 0;
+}
+
+.avatar {
+  margin-bottom: 10px;
+
+  img {
+    width: 150px;
+    height: 150px;
+    border: 10px solid #f5f5f5;
+  }
 }
 
 .card {

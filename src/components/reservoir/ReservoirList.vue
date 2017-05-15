@@ -1,27 +1,12 @@
 <template>
   <div class="reservoirs">
 
-    <!-- <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>Name</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="reservoir in reservoirs">
-          <td>{{ reservoir.attributes.name }}</td>
-        </tr>
-    </tbody>
-    </table> -->
+    <v-breadcrumbs icons class="elevation-1">
+      <v-breadcrumbs-item href="/" target="_self">Home</v-breadcrumbs-item>
+      <v-breadcrumbs-item>Reservoirs</v-breadcrumbs-item>
+    </v-breadcrumbs>
 
-    <v-data-table v-model="reservoirs" :headers="headers" hide-actions class="elevation-1">
-      <template slot="items" scope="props">
-        <td>{{ props.item.attributes.name }}</td>
-        <td>{{ props.item.attributes.description }}</td>
-      </template>
-    </v-data-table>
-
-    <br/><v-divider></v-divider><br/>
+    <v-alert warning v-show="reservoirs.length == 0 && loaded == true" class="yellow darken-3">There are no registered reservoirs</v-alert>
 
     <v-row>
       <v-col xs12 sm6 md4 v-for="reservoir in reservoirs" :key="reservoir.id">
@@ -29,44 +14,26 @@
           <v-card-row class="green darken-1">
             <v-card-title>
               <span class="white--text">{{ reservoir.attributes.name }}</span>
-              <!-- <v-spacer></v-spacer>
-              <div>
-                <v-menu id="marriot" bottom left origin="top right">
-                  <v-btn icon="icon" slot="activator" class="white--text">
-                    <v-icon>more_vert</v-icon>
-                  </v-btn>
-                  <v-list>
-                    <v-list-item>
-                      <v-list-tile>
-                        <v-list-tile-title>Never show rewards</v-list-tile-title>
-                      </v-list-tile>
-                    </v-list-item>
-                    <v-list-item>
-                      <v-list-tile>
-                        <v-list-tile-title>Remove Card</v-list-tile-title>
-                      </v-list-tile>
-                    </v-list-item>
-                    <v-list-item>
-                      <v-list-tile>
-                        <v-list-tile-title>Send Feedback</v-list-tile-title>
-                      </v-list-tile>
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
-              </div> -->
             </v-card-title>
           </v-card-row>
           <v-card-text>
-            <v-card-row height="90px">{{ reservoir.attributes.description }}</v-card-row>
+            <v-card-row class="description">{{ reservoir.attributes.description }}</v-card-row>
           </v-card-text>
           <v-card-row actions>
-            <v-btn flat class="green--text darken-1" to="/teste">View Devices</v-btn>
+            <v-chip class="grey lighten-4" v-if="reservoir.relationships['reservoir-group'].data" title="Reservoir Group">
+              <v-avatar>
+                <v-icon>group_work</v-icon>
+              </v-avatar>
+              {{ reservoirsGroups[reservoir.relationships['reservoir-group'].data.id].attributes.name }}
+            </v-chip>
+            <v-spacer></v-spacer>
+            <v-btn flat class="green--text darken-1" :router="true" :href="{ name: 'device.list', params: { reservoir: reservoir.id } }">View Devices</v-btn>
           </v-card-row>
         </v-card>
       </v-col>
     </v-row>
 
-    <v-pagination v-bind:length.number="4" v-model="page" circle />
+    <v-pagination :length.number="pageCount" v-model="page" v-show="reservoirs.length > 0" circle />
 
   </div>
 </template>
@@ -75,45 +42,71 @@
 export default {
   data () {
     return {
-      headers: [
-        {
-          text: 'Name',
-          value: 'name',
-          left: true
-        },
-        {
-          text: 'Description',
-          value: 'description',
-          left: true
-        }
-      ],
+      loaded: false,
       reservoirs: [],
+      reservoirsGroups: [],
       page: 1,
-      perPage: 10,
-      search: ''
+      perPage: 6,
+      pageCount: 0
     }
   },
   created () {
     this.list()
   },
+  watch: {
+    page: function () {
+      this.list()
+    }
+  },
   methods: {
     list () {
-      this.$http.get(`reservoirs?page=${this.page}&per_page=${this.perPage}&search=${this.search}`)
+      this.$http.get(`reservoirs?page=${this.page}&per_page=${this.perPage}`)
         .then((response) => {
           this.reservoirs = response.data.data
           this.perPage = response.headers['per-page']
-          this.total = response.headers['total']
+          this.pageCount = Math.ceil(response.headers['total'] / this.perPage)
+
+          let reservoirsGroups = response.data.included.filter((object) => object.type === 'reservoir-groups')
+          reservoirsGroups.forEach((reservoirGroup) => {
+            this.reservoirsGroups[reservoirGroup.id] = reservoirGroup
+          })
         })
         .catch((error) => {
-          console.log(error.response)
+          console.log('Reservoirs request error!')
+          console.log(error)
+        })
+        .then(() => {
+          this.loaded = true
         })
     }
   }
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .reservoir {
   margin-bottom: 15px;
+
+  .description {
+    display: block;
+    display: -webkit-box;
+    margin: 0 auto;
+    height: 90px !important;
+    line-height: 1.4;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .chip {
+    margin: 0;
+    font-size: .8em;
+
+    .avatar {
+      margin-right: 1px;
+      color: #dcdcdc;
+    }
+  }
 }
 </style>

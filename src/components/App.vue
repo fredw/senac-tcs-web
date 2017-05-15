@@ -1,19 +1,19 @@
 <template>
   <v-app id="app" top-toolbar sidebar-under-toolbar>
     <v-toolbar class="blue" fixed>
-      <v-toolbar-side-icon v-if="user.authenticated" @click.native.stop="nav = !nav" />
+      <v-toolbar-side-icon v-if="authenticated" @click.native.stop="nav = !nav" />
       <v-toolbar-title class="hidden-sm-and-down">{{ title }}</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-menu v-if="user.authenticated" bottom origin="top right" transition="v-scale-transition">
+      <v-menu v-if="authenticated" bottom origin="top right" transition="v-scale-transition">
         <v-btn icon dark slot="activator">
           <v-icon>account_circle</v-icon>
         </v-btn>
         <v-list>
           <v-list-item>
-            <v-list-tile>
+            <v-list-tile to="user/edit">
               <v-list-tile-title>Change Account</v-list-tile-title>
             </v-list-tile>
-            <v-list-tile v-if="user.authenticated" @click.native="logout">
+            <v-list-tile @click.native="logout">
               <v-list-tile-title>Log Out</v-list-tile-title>
             </v-list-tile>
           </v-list-item>
@@ -21,7 +21,7 @@
       </v-menu>
     </v-toolbar>
     <main>
-      <v-sidebar drawer v-model="nav" height="100%" v-if="user.authenticated">
+      <v-sidebar drawer v-model="nav" height="100%" v-if="authenticated">
         <v-list dense>
           <v-list-item>
             <v-list-tile to="/">
@@ -29,9 +29,6 @@
             </v-list-tile>
             <v-list-tile to="/reservoirs">
               <v-list-tile-title>Reservoirs</v-list-tile-title>
-            </v-list-tile>
-            <v-list-tile to="/teste">
-              <v-list-tile-title>Teste</v-list-tile-title>
             </v-list-tile>
           </v-list-item>
         </v-list>
@@ -54,7 +51,7 @@ export default {
     return {
       title: 'Water Reservoir',
       nav: null,
-      user: auth.user
+      authenticated: auth.user.authenticated
     }
   },
   created () {
@@ -70,13 +67,34 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
+body {
+  background: #eee !important;
+}
+
 #app .content {
   padding: 90px 0 15px;
   background: #eee;
 }
 
+/* Overwrite default styles */
+
 .sidebar {
   padding-top: 70px !important;
+}
+
+.breadcrumbs {
+  margin-bottom: 15px !important;
+  background-color: #fff;
+  justify-content: flex-start !important;
+}
+
+.pagination {
+  width: 100%;
+  justify-content: center;
+}
+
+.card__title {
+  letter-spacing: 0 !important;
 }
 </style>
