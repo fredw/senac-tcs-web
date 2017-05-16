@@ -13,6 +13,7 @@
             :rules="errors"
             @keyup.enter.prevent.native="authenticate"
             required
+            :disabled="loading || loadingForgotPassword"
           ></v-text-field>
         </v-col>
       </v-row>
@@ -25,13 +26,19 @@
             v-model="user.password"
             @keyup.enter.prevent.native="authenticate"
             required
+            :disabled="loading"
           ></v-text-field>
         </v-col>
       </v-row>
-      <v-btn success block dark large @click.native="authenticate">Login</v-btn>
+      <v-btn success block dark large :loading="loading" @click.native="authenticate">Login</v-btn>
       <v-row>
         <v-col xs12>
-          <v-btn flat block small class="grey--text lighten-1" @click.native="forgotPassword">Forgot your password?</v-btn>
+          <v-btn
+            flat block small
+            class="grey--text lighten-1"
+            :loading="loadingForgotPassword"
+            @click.native="forgotPassword"
+          >Forgot your password?</v-btn>
           <v-alert info dismissible v-show="info.title">
             <div>
               <strong>{{ info.title }}</strong><br/>
@@ -45,13 +52,16 @@
 </template>
 
 <script>
-import auth from '../auth'
+import auth from '../service/auth'
 import User from '../domain/user/User'
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'login',
   data () {
     return {
+      loading: false,
+      loadingForgotPassword: false,
       errors: [],
       info: {
         title: '',
@@ -60,7 +70,9 @@ export default {
       user: new User()
     }
   },
+  computed: mapGetters(['getUser']),
   methods: {
+    ...mapActions(['setUser', 'setToken']),
     authenticate () {
       auth.login(this, { user: this.user }, this.$route.query.redirect ? this.$route.query.redirect : '/')
     },

@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import auth from '../../auth/index'
+import auth from '../../service/auth'
 
 export default {
   name: 'password-edit',

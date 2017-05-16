@@ -1,10 +1,10 @@
 <template>
   <v-app id="app" top-toolbar sidebar-under-toolbar>
     <v-toolbar class="blue" fixed>
-      <v-toolbar-side-icon v-if="authenticated" @click.native.stop="nav = !nav" />
+      <v-toolbar-side-icon v-if="getUser" @click.native.stop="nav = !nav" />
       <v-toolbar-title class="hidden-sm-and-down">{{ title }}</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-menu v-if="authenticated" bottom origin="top right" transition="v-scale-transition">
+      <v-menu v-if="getUser" bottom origin="top right" transition="v-scale-transition">
         <v-btn icon dark slot="activator">
           <v-icon>account_circle</v-icon>
         </v-btn>
@@ -14,14 +14,14 @@
               <v-list-tile-title>Change Account</v-list-tile-title>
             </v-list-tile>
             <v-list-tile @click.native="logout">
-              <v-list-tile-title>Log Out</v-list-tile-title>
+              <v-list-tile-title>Log out</v-list-tile-title>
             </v-list-tile>
           </v-list-item>
         </v-list>
       </v-menu>
     </v-toolbar>
     <main>
-      <v-sidebar drawer v-model="nav" height="100%" v-if="authenticated">
+      <v-sidebar drawer v-model="nav" height="100%" v-if="getUser">
         <v-list dense>
           <v-list-item>
             <v-list-tile to="/">
@@ -43,17 +43,18 @@
 </template>
 
 <script>
-import auth from '../auth'
+import { mapGetters } from 'vuex'
+import auth from '../service/auth'
 
 export default {
   name: 'app',
   data () {
     return {
       title: 'Water Reservoir',
-      nav: null,
-      authenticated: auth.user.authenticated
+      nav: null
     }
   },
+  computed: mapGetters(['getUser']),
   created () {
     if (this.$route.meta.title) {
       this.title = this.$route.meta.title
