@@ -1,40 +1,47 @@
-import router from '../router'
+import router from '../router/index'
 
 export default {
-  user: {
-    authenticated: !!localStorage.getItem('token'),
-    user: null
-  },
 
   login (context, data, redirect) {
     this.reset(context)
-    context.$http.post('users/sign_in', data, { headers: { Authorization: null } })
+    context.loading = true
+    context.$http.post('users/sign_in', data, { headers: { Authorization: '' } })
       .then((response) => {
-        localStorage.setItem('token', response.headers.authorization)
+        let authorization = response.headers.authorization
+        // Set token and user id on local storage and store
+        localStorage.setItem('token', authorization)
         localStorage.setItem('user.id', response.data.data.id)
-        this.user.authenticated = true
+        context.setUser(response.data.data)
+        context.setToken(authorization)
+        // Redirect
         if (redirect) {
           router.push(redirect)
         }
       })
       .catch((error) => {
-        // console.log(error.response)
+        console.log('User sign in error')
+        console.log(error.response)
         if (error.response.status === 401) {
           context.errors.push('Invalid e-mail and/or password!')
         } else {
           context.errors.push(error.response.data.error)
         }
       })
+      .then(() => {
+        context.loading = false
+      })
   },
 
   logout (context, data) {
     context.$http.delete('users/sign_out', data)
       .then(() => {
+        // Unset token and user id on local storage and store
         localStorage.removeItem('token')
         localStorage.removeItem('user.id')
-        this.user.authenticated = false
-        this.user.user = null
-        router.push({path: '/login'})
+        context.$store.dispatch('clearUser')
+        context.$store.dispatch('clearToken')
+        // Get back to login
+        router.push({path: '/login', query: {redirect: context.$route.path}})
       }, error => {
         console.log('User signout error')
         console.log(error)
@@ -43,6 +50,7 @@ export default {
 
   forgotPassword (context, data) {
     this.reset(context)
+    context.loadingForgotPassword = true
     context.$http.post('users/password', data, { headers: { Authorization: null } })
       .then(() => {
         context.info = {
@@ -57,6 +65,9 @@ export default {
         } else {
           context.errors.push(error.response.data.email)
         }
+      })
+      .then(() => {
+        context.loadingForgotPassword = false
       })
   },
 
@@ -95,7 +106,7 @@ export default {
         } else if (error.response.data.current_password) {
           context.errors.password.push(error.response.data.current_password[0])
         } else {
-          context.errors.push('Unknow error!')
+          context.errors.push('Unknown error!')
         }
       })
   },

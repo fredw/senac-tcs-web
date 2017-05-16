@@ -6,7 +6,9 @@
       <v-breadcrumbs-item>Reservoirs</v-breadcrumbs-item>
     </v-breadcrumbs>
 
-    <v-alert warning v-show="reservoirs.length == 0 && loaded == true" class="yellow darken-3">There are no registered reservoirs</v-alert>
+    <v-progress-linear v-bind:indeterminate="true" v-show="loaded === false"></v-progress-linear>
+
+    <v-alert warning v-show="reservoirs.length == 0 && loaded === true" class="yellow darken-3">There are no registered reservoirs</v-alert>
 
     <v-row>
       <v-col xs12 sm6 md4 v-for="reservoir in reservoirs" :key="reservoir.id">

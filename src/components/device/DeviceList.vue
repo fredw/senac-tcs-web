@@ -7,6 +7,8 @@
       <v-breadcrumbs-item>Devices</v-breadcrumbs-item>
     </v-breadcrumbs>
 
+    <v-progress-linear v-bind:indeterminate="true" v-show="loaded === false"></v-progress-linear>
+
     <v-alert warning v-show="devices.length == 0 && loaded == true" class="yellow darken-3">There are no registered devices</v-alert>
 
     <v-row>
