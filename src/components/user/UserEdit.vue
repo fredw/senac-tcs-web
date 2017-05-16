@@ -31,7 +31,8 @@
 </template>
 
 <script>
-import auth from '../../auth/index'
+import auth from '../../service/auth'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'user-edit',
@@ -48,8 +49,10 @@ export default {
       }
     }
   },
+  computed: mapGetters(['getUser']),
   created () {
-    this.user.name = auth.user.attributes.name
+    let user = this.getUser
+    this.user.name = user.attributes.name
   },
   methods: {
     save () {

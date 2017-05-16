@@ -1,8 +1,10 @@
-# Water Reservoir Web
+Water Reservoir Web
+================================================================================
+[![Codeship Status for fredw/senac-tcs-web](https://app.codeship.com/projects/ea1fa610-1980-0135-1f15-7e4720114d12/status?branch=master)](https://app.codeship.com/projects/219312)
 
-> Senac TCS Web application
 
-## Build Setup
+Build Setup
+------------------------------------------------------------
 
 ``` bash
 # install dependencies
@@ -26,3 +28,22 @@ npm run e2e
 # run all tests
 npm test
 ```
+
+Manual deploy
+------------------------------------------------------------
+
+### Configure
+``` bash
+heroku plugins:install heroku-cli-static 
+heroku static:init
+```
+
+### Deploy
+``` bash
+heroku static:deploy
+```
+
+Credits
+------------------------------------------------------------
+
+* Frederico Wuerges Becker <fred.wuerges@gmail.com>
