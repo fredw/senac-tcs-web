@@ -7,18 +7,65 @@
       <v-breadcrumbs-item>Devices</v-breadcrumbs-item>
     </v-breadcrumbs>
 
+    <!-- Filter -->
+    <v-card class="filter">
+      <v-card-row class="grey lighten-4">
+        <v-card-title><small>Filters</small></v-card-title>
+      </v-card-row>
+      <v-card-text>
+        <v-row row>
+          <v-col xs12 sm12 md4>
+            <v-select
+              :items="getFilterDevices"
+              v-model="filters.device"
+              label="Device"
+              light
+              hide-details
+              auto
+            />
+          </v-col>
+          <v-col xs12 sm6 md4>
+            <v-dialog persistent lazy>
+              <v-text-field
+                slot="activator"
+                label="Date from"
+                v-model="filters.dateFrom"
+                prepend-icon="event"
+                readonly
+              ></v-text-field>
+              <v-date-picker v-model="filters.dateFrom" scrollable></v-date-picker>
+            </v-dialog>
+          </v-col>
+          <v-col xs12 sm6 md4>
+            <v-dialog persistent lazy>
+              <v-text-field
+                slot="activator"
+                label="Date to"
+                v-model="filters.dateTo"
+                prepend-icon="event"
+                readonly
+              ></v-text-field>
+              <v-date-picker v-model="filters.dateTo" scrollable></v-date-picker>
+            </v-dialog>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
+
+    <!-- Loading -->
     <v-progress-linear v-bind:indeterminate="true" v-show="loaded === false"></v-progress-linear>
 
-    <v-alert warning v-show="devices.length == 0 && loaded == true" class="yellow darken-3">There are no devices to display</v-alert>
+    <!-- No records -->
+    <v-alert warning v-show="devices.length == 0 && loaded == true" class="yellow darken-3">There are no data to display</v-alert>
 
-    <v-row>
-      <v-col xs12 v-for="device in devices" :key="device.id">
+    <v-row v-if="device.data">
+      <v-col xs12>
         <v-card class="device">
 
           <!-- Title -->
           <v-card-row class="blue-grey darken-1">
             <v-card-title>
-              <span class="white--text">{{ device.attributes.name }}</span>
+              <span class="white--text">{{ device.data.attributes.name }}</span>
               <v-spacer></v-spacer>
               <div>
                 <v-menu id="marriot" bottom left origin="top right">
@@ -27,7 +74,7 @@
                   </v-btn>
                   <v-list>
                     <v-list-item>
-                      <v-list-tile @click.native="generateSettings(device.id)">
+                      <v-list-tile @click.native="generateSettings(device.data.id)">
                         <v-list-tile-title>Generate device settings</v-list-tile-title>
                       </v-list-tile>
                     </v-list-item>
@@ -38,10 +85,10 @@
           </v-card-row>
 
           <v-card-text>
-            <v-card-row>{{ device.attributes.description }}</v-card-row>
+            <v-card-row>{{ device.data.attributes.description }}</v-card-row>
 
             <!-- NO Flow sensors -->
-            <v-card-row v-show="device.relationships['flow-sensors'].data.length == 0" class="alert-no-data">
+            <v-card-row v-show="device.data.relationships['flow-sensors'].data.length == 0" class="alert-no-data">
               <v-chip class="grey lighten-2">
                 <v-avatar class="grey lighten-1">
                   <v-icon>error_outline</v-icon>
@@ -50,7 +97,7 @@
               </v-chip>
             </v-card-row>
             <!-- NO Rulers -->
-            <v-card-row v-show="device.relationships.rulers.data.length == 0" class="alert-no-data">
+            <v-card-row v-show="device.data.relationships.rulers.data.length == 0" class="alert-no-data">
               <v-chip class="grey lighten-2">
                 <v-avatar class="grey lighten-1">
                   <v-icon>error_outline</v-icon>
@@ -63,23 +110,23 @@
 
             <!-- Now -->
             <v-card class="now elevation-1">
-              <v-card-row class="grey lighten-4">
+              <v-card-row class="blue-grey lighten-4">
                 <v-card-title>Last measurement!</v-card-title>
               </v-card-row>
               <v-card-text>
                 <v-row>
                   <!-- Flow sensors now -->
-                  <v-col sm12 md6 v-if="device.relationships['flow-sensors'].data.length != 0">
+                  <v-col sm12 md6 v-if="device.data.relationships['flow-sensors'].data.length != 0">
                     <v-chip class="blue darken-2 white--text">
                       <v-avatar class="blue darken-4">
                         <v-icon>autorenew</v-icon>
                       </v-avatar>
                       Flow Sensors
                     </v-chip>
-                    <canvas id="flow-sensors-last" :count="device.relationships['flow-sensors'].data.length"></canvas>
+                    <canvas id="flow-sensors-last" :count="device.data.relationships['flow-sensors'].data.length"></canvas>
                     <chartjs-bar
                       target="flow-sensors-last"
-                      v-for="(flowSensor, index) in device.relationships['flow-sensors'].data"
+                      v-for="(flowSensor, index) in device.data.relationships['flow-sensors'].data"
                       v-if="flowSensorsDataLast[flowSensor.id]"
                       :key="flowSensor.id"
                       :width="490"
@@ -89,31 +136,31 @@
                       :datalabel="'Flow Sensor #' + (index + 1)"
                       :labels="flowSensorsDataLast[flowSensor.id].label"
                       :data="flowSensorsDataLast[flowSensor.id].data"
-                      :beginzero="true"
                       :bind="true"
                       :option="chartFlowSensorOptions"
                     ></chartjs-bar>
                   </v-col>
                   <!-- Rulers now -->
-                  <v-col sm12 md6 v-if="device.relationships.rulers.data.length != 0">
+                  <v-col sm12 md6 v-if="device.data.relationships.rulers.data.length != 0">
                     <v-chip class="cyan darken-2 white--text">
                       <v-avatar class="cyan darken-4">
                         <v-icon>invert_colors</v-icon>
                       </v-avatar>
                       Rulers
                     </v-chip>
-                    <canvas id="ruler-last" :count="device.relationships.rulers.data.length"></canvas>
+                    <canvas id="ruler-last" :count="device.data.relationships.rulers.data.length"></canvas>
                     <chartjs-bar
                       target="ruler-last"
-                      v-for="(ruler, index) in device.relationships.rulers.data"
-                      v-if="rulersDataLast[ruler.id]"
+                      v-for="(ruler, index) in device.data.relationships.rulers.data"
+                      v-if="rulersDataLast.data[ruler.id]"
                       :key="ruler.id"
                       :width="490"
                       :height="700"
                       :datalabel="'Ruler #' + (index + 1)"
-                      :labels="rulersDataLast[ruler.id].label"
-                      :data="rulersDataLast[ruler.id].data"
-                      :beginzero="true"
+                      :labels="rulersDataLast.labels[ruler.id]"
+                      :data="rulersDataLast.data[ruler.id]"
+                      :backgroundcolor="rulersDataLast.backgroundColor[ruler.id]"
+                      :bordercolor="rulersDataLast.borderColor[ruler.id]"
                       :bind="true"
                       :option="chartLevelSensorOptions"
                     ></chartjs-bar>
@@ -124,44 +171,12 @@
 
             <!-- History -->
             <v-card class="history elevation-1">
-              <v-card-row class="grey lighten-4">
+              <v-card-row class="blue-grey lighten-4">
                 <v-card-title>History</v-card-title>
               </v-card-row>
               <v-card-text>
-                <!-- Filter -->
-                <v-card-row>
-                  <v-row>
-                    <v-col xs12 sm5>
-                      <v-dialog persistent lazy>
-                        <v-text-field
-                          slot="activator"
-                          label="Date from"
-                          v-model="filters[device.id].dateFrom"
-                          prepend-icon="event"
-                          readonly
-                        ></v-text-field>
-                        <v-date-picker v-model="filters[device.id].dateFrom" scrollable></v-date-picker>
-                      </v-dialog>
-                    </v-col>
-                    <v-col xs12 sm5>
-                      <v-dialog persistent lazy>
-                        <v-text-field
-                          slot="activator"
-                          label="Date to"
-                          v-model="filters[device.id].dateTo"
-                          prepend-icon="event"
-                          readonly
-                        ></v-text-field>
-                        <v-date-picker v-model="filters[device.id].dateTo" scrollable></v-date-picker>
-                      </v-dialog>
-                    </v-col>
-                    <v-col xs12 sm2>
-                      <v-btn secondary dark @click.native="list()">OK</v-btn>
-                    </v-col>
-                  </v-row>
-                </v-card-row>
                 <!-- Flow sensors -->
-                <div v-if="device.relationships['flow-sensors'].data.length != 0">
+                <div v-if="device.data.relationships['flow-sensors'].data.length != 0">
                   <v-card-row>
                     <v-chip class="blue darken-2 white--text">
                       <v-avatar class="blue darken-4">
@@ -170,21 +185,18 @@
                       Flow Sensors
                     </v-chip>
                   </v-card-row>
-                  <v-card-row>
-                    <canvas id="flow-sensors" :count="device.relationships['flow-sensors'].data.length"></canvas>
+                  <v-card-row v-for="(flowSensor, index) in device.data.relationships['flow-sensors'].data" :key="flowSensor.id">
+                    <canvas :id="'flow-sensors-history-' + index" :count="1"></canvas>
                     <chartjs-line
-                      target="flow-sensors"
-                      v-for="(flowSensor, index) in device.relationships['flow-sensors'].data"
-                      :key="flowSensor.id"
+                      :target="'flow-sensors-history-' + index"
                       :width="600"
                       :height="400"
                       :fill="true"
                       :backgroundcolor="'rgba(75,136,192,0.2)'"
                       :bordercolor="'#1976d2'"
                       :datalabel="'Flow Sensor #' + (index + 1)"
-                      :labels="flowSensorsData.labels"
-                      :data="flowSensorsData.data"
-                      :beginzero="true"
+                      :labels="flowSensorsDataHistory.labels[flowSensor.id]"
+                      :data="flowSensorsDataHistory.data[flowSensor.id]"
                       :bind="true"
                       :option="chartFlowSensorOptions"
                     ></chartjs-line>
@@ -192,7 +204,7 @@
                   <br/>
                 </div>
                 <!-- Rulers -->
-                <div v-if="device.relationships.rulers.data.length != 0">
+                <div v-if="device.data.relationships.rulers.data.length != 0">
                   <v-card-row>
                     <v-chip class="cyan darken-2 white--text">
                       <v-avatar class="cyan darken-4">
@@ -201,22 +213,21 @@
                       Rulers
                     </v-chip>
                   </v-card-row>
-                  <v-card-row>
-                    <canvas id="rulers" :count="device.relationships.rulers.data.length"></canvas>
+                  <v-card-row v-for="(ruler, index) in device.data.relationships.rulers.data" :key="ruler.id">
+                    <canvas :id="'ruler-history-' + index" :count="1"></canvas>
                     <chartjs-bar
-                      target="rulers"
-                      v-for="(ruler, index) in device.relationships.rulers.data"
-                      :key="ruler.id"
+                      v-if="rulerSensorsDataHistory.data[ruler.id]"
+                      :target="'ruler-history-' + index"
                       :width="600"
                       :height="400"
                       :datalabel="'Ruler #' + (index + 1)"
-                      :labels="rulerSensorsData.labels"
-                      :data="rulerSensorsData.data"
-                      :beginzero="true"
+                      :labels="rulerSensorsDataHistory.labels[ruler.id]"
+                      :data="rulerSensorsDataHistory.data[ruler.id]"
+                      :backgroundcolor="rulerSensorsDataHistory.backgroundColor[ruler.id]"
+                      :bordercolor="rulerSensorsDataHistory.borderColor[ruler.id]"
                       :bind="true"
                       :option="chartLevelSensorOptions"
                     ></chartjs-bar>
-                    <!--:backgroundcolor="getRandomColor()"-->
                   </v-card-row>
                 </div>
               </v-card-text>
@@ -255,24 +266,34 @@ export default {
   data () {
     return {
       loaded: false,
-      // List
-      reservoir: null,
-      devices: [],
-      rulers: [],
-      levelSensors: [],
+      device: {},
+      reservoir: {},
       flowSensors: [],
+      rulers: [],
       // Last data
       flowSensorsDataLast: [],
-      rulersDataLast: [],
-      // History data
-      filters: [],
-      flowSensorsData: {
+      rulersDataLast: {
+        labels: [],
+        data: [],
+        backgroundColor: [],
+        borderColor: []
+      },
+      // Filters
+      devices: [],
+      filters: {
+        device: null,
+        dateFrom: moment(Date.now()).format('YYYY-MM-01'),
+        dateTo: moment(Date.now()).format('YYYY-MM-DD')
+      },
+      flowSensorsDataHistory: {
         labels: [],
         data: []
       },
-      rulerSensorsData: {
+      rulerSensorsDataHistory: {
         labels: [],
-        data: []
+        data: [],
+        backgroundColor: [],
+        borderColor: []
       },
       // Chart options
       chartFlowSensorOptions: {
@@ -344,131 +365,170 @@ export default {
       }
     }
   },
-  created () {
-    this.list()
-    setInterval(() => { this.list() }, 30000)
+  computed: {
+    getFilterDevices () {
+      return this.devices.map((device) => {
+        return {
+          value: device.id,
+          text: device.attributes.name
+        }
+      })
+    }
   },
-  methods: {
-    list () {
-      let reservoir = this.$route.params.reservoir
-      this.$http.get(`reservoirs/${reservoir}/devices`)
+  watch: {
+    'filters.device' (device) {
+      this.$http.get(`devices/${device.value}`)
         .then((response) => {
           let included = response.data.included
-
-          // Store all included on request on data values
+          this.device = response.data
           this.reservoir = included.filter((object) => object.type === 'reservoirs')[0]
-          this.devices = response.data.data
           this.flowSensors = included.filter((object) => object.type === 'flow-sensors')
           this.rulers = included.filter((object) => object.type === 'rulers')
-          this.levelSensors = included.filter((object) => object.type === 'level-sensors')
-
-          // Fill date with start value for each device
-          if (this.loaded === false) {
-            let firstDate = moment(Date.now()).format('YYYY-MM-01')
-            let now = moment(Date.now()).format('YYYY-MM-DD')
-            this.devices.forEach((device) => {
-              this.filters[device.id] = {
-                dateFrom: firstDate,
-                dateTo: now
-              }
-            })
-          }
-
-          // For each flow sensor, do a requests to build chart
-          this.flowSensors.forEach((flowSensor) => {
-            // Last data (now)
-            this.$http.get(`flow_sensors/${flowSensor.id}/flow_sensors_data_last`)
-              .then((response) => {
-                if (response.data.data) {
-                  let createdAt = new Date(response.data.data.created_at)
-                  this.flowSensorsDataLast[flowSensor.id] = {
-                    label: [moment(createdAt).format('YYYY-MM-DD HH:mm')],
-                    data: [Number.parseFloat(response.data.data.consumption_per_minute)]
-                  }
-                }
-              })
-              .catch((error) => {
-                console.log('Flow sensors last data request error!')
-                console.log(error)
-              })
-
-            // Define filter dates
-            let deviceId = flowSensor.relationships.device.data.id
-            let dateFrom = this.filters[deviceId].dateFrom.replace(/-/g, '') + ' 0000'
-            let dateTo = this.filters[deviceId].dateTo.replace(/-/g, '') + ' 2359'
-
-            // History
-            this.flowSensorsData.labels = []
-            this.flowSensorsData.data = []
-            this.$http.get(`flow_sensors/${flowSensor.id}/flow_sensors_data?by_date[from]=${dateFrom}&by_date[to]=${dateTo}`)
-              .then((response) => {
-                response.data.data.forEach((data) => {
-                  this.flowSensorsData.labels.push(moment(new Date(data.created_at)).format('YYYY-MM-DD HH:mm'))
-                  this.flowSensorsData.data.push(Number.parseFloat(data.consumption_per_minute))
-                })
-              })
-              .catch((error) => {
-                console.log('Flow sensors history data request error!')
-                console.log(error)
-              })
-          })
-
-          // For each level ruler, do a request to build chart
-          this.rulers.forEach((ruler, index) => {
-            // Last data (now)
-            this.rulersDataLast[ruler.id] = {
-              label: [],
-              data: []
-            }
-            // Create a data to display the total reservoir volume
-            this.rulersDataLast[ruler.id].label.push('Reservoir')
-            this.rulersDataLast[ruler.id].data.push(Number.parseFloat(this.reservoir.attributes.volume))
-            this.$http.get(`rulers/${ruler.id}/rulers_data_last`)
-              .then((response) => {
-                if (!response.data.data) {
-                  return
-                }
-                // Create with ruler volume
-                this.rulersDataLast[ruler.id].label.push(moment(new Date(response.data.data.created_at)).format('YYYY-MM-DD HH:mm'))
-                this.rulersDataLast[ruler.id].data.push(this.getRulerSensorVolume(response.data.data.level_sensor_data))
-              })
-              .catch((error) => {
-                console.log('Ruler last data request error!')
-                console.log(error)
-              })
-
-            // Define filter dates
-            let deviceId = ruler.relationships.device.data.id
-            let dateFrom = this.filters[deviceId].dateFrom.replace(/-/g, '') + ' 0000'
-            let dateTo = this.filters[deviceId].dateTo.replace(/-/g, '') + ' 2359'
-
-            // History
-            this.rulerSensorsData.labels = []
-            this.rulerSensorsData.data = []
-            // Create a data to display the total reservoir volume
-            this.rulerSensorsData.labels.push('Reservoir')
-            this.rulerSensorsData.data.push(Number.parseFloat(this.reservoir.attributes.volume))
-            this.$http.get(`rulers/${ruler.id}/rulers_data?by_date[from]=${dateFrom}&by_date[to]=${dateTo}`)
-              .then((response) => {
-                // Create a data for each result
-                response.data.data.forEach((data) => {
-                  this.rulerSensorsData.labels.push(moment(new Date(data.created_at)).format('YYYY-MM-DD HH:mm'))
-                  this.rulerSensorsData.data.push(this.getRulerSensorVolume(data.level_sensor_data))
-                })
-              })
-              .catch((error) => {
-                console.log('Ruler sensors data request error!')
-                console.log(error)
-              })
-          })
-        })
-        .catch((error) => {
-          console.log('Device request error!')
-          console.log(error)
+          // Get data
+          this.getLast()
+          this.getHistory()
         })
         .then(() => {
           this.loaded = true
         })
+    },
+    'filters.dateFrom' () {
+      this.getHistory()
+    },
+    'filters.dateTo' () {
+      this.getHistory()
+    }
+  },
+  created () {
+    this.getDevices()
+    setInterval(() => { this.getLast() }, 30000)
+  },
+  methods: {
+    getDevices () {
+      let reservoir = this.$route.params.reservoir
+      this.$http.get(`reservoirs/${reservoir}/devices`)
+        .then((response) => {
+          this.devices = response.data.data
+          // Pre-select first device on filter
+          let deviceFirst = this.devices[0]
+          this.filters.device = {
+            value: deviceFirst.id,
+            text: deviceFirst.attributes.name
+          }
+        })
+    },
+    getLast () {
+      // For each flow sensor, do a requests to build chart
+      this.flowSensors.forEach((flowSensor) => {
+        this.$http.get(`flow_sensors/${flowSensor.id}/flow_sensors_data_last`)
+          .then((response) => {
+            if (response.data.data) {
+              let createdAt = new Date(response.data.data.created_at)
+              this.flowSensorsDataLast[flowSensor.id] = {
+                label: [moment(createdAt).format('YYYY-MM-DD HH:mm')],
+                data: [Number.parseFloat(response.data.data.consumption_per_minute)]
+              }
+            }
+          })
+          .catch((error) => {
+            console.log('Flow sensors last data request error!')
+            console.log(error)
+          })
+      })
+
+      // Ruler - Create a data to display the total reservoir volume
+      const rulersDataLast = {
+        labels: ['Reservoir'],
+        data: [Number.parseFloat(this.reservoir.attributes.volume)],
+        backgroundColor: ['rgba(75, 192, 192, 0.4)'],
+        borderColor: ['rgba(75, 192, 192, 0.5)']
+      }
+      // For each ruler, do a request to build the chart
+      this.rulers.forEach((ruler) => {
+        this.$http.get(`rulers/${ruler.id}/rulers_data_last`)
+          .then((response) => {
+            if (!response.data.data) {
+              return
+            }
+            // Create with ruler volume
+            rulersDataLast.labels.push(moment(new Date(response.data.data.created_at)).format('YYYY-MM-DD HH:mm'))
+            rulersDataLast.data.push(this.getRulerSensorVolume(response.data.data.level_sensor_data))
+            rulersDataLast.backgroundColor.push('rgba(190, 190, 190, 0.6)')
+            rulersDataLast.borderColor.push('rgba(190, 190, 190, 0.9)')
+
+            // Set all data ($set is used because this is the only way to say to vue.js to refresh interface with this data)
+            this.$set(this.rulersDataLast.labels, ruler.id, rulersDataLast.labels)
+            this.$set(this.rulersDataLast.data, ruler.id, rulersDataLast.data)
+            this.$set(this.rulersDataLast.backgroundColor, ruler.id, rulersDataLast.backgroundColor)
+            this.$set(this.rulersDataLast.borderColor, ruler.id, rulersDataLast.borderColor)
+          })
+          .catch((error) => {
+            console.log('Ruler last data request error!')
+            console.log(error)
+          })
+      })
+    },
+    getHistory () {
+      // Define filter dates
+      const dateFrom = this.filters.dateFrom.replace(/-/g, '') + ' 0000'
+      const dateTo = this.filters.dateTo.replace(/-/g, '') + ' 2359'
+
+      // For each flow sensor, do a requests to build chart
+      this.flowSensors.forEach((flowSensor) => {
+        let flowSensorsDataHistory = {
+          labels: [],
+          data: []
+        }
+        this.$http.get(`flow_sensors/${flowSensor.id}/flow_sensors_data?by_date[from]=${dateFrom}&by_date[to]=${dateTo}`)
+          .then((response) => {
+            response.data.data.forEach((data) => {
+              flowSensorsDataHistory.labels.push(moment(new Date(data.created_at)).format('YYYY-MM-DD HH:mm'))
+              flowSensorsDataHistory.data.push(Number.parseFloat(data.consumption_per_minute))
+            })
+            // Set all data ($set is used because this is the only way to say to vue.js to refresh interface with this data)
+            this.$set(this.flowSensorsDataHistory.labels, flowSensor.id, flowSensorsDataHistory.labels)
+            this.$set(this.flowSensorsDataHistory.data, flowSensor.id, flowSensorsDataHistory.data)
+          })
+          .catch((error) => {
+            console.log('Flow sensors history data request error!')
+            console.log(error)
+          })
+      })
+
+      // For each level ruler, do a request to build chart
+      this.rulers.forEach((ruler) => {
+        // Create a data for each ruler
+        this.$http.get(`rulers/${ruler.id}/rulers_data?by_date[from]=${dateFrom}&by_date[to]=${dateTo}`)
+          .then((response) => {
+            let rulerData = {
+              labels: [],
+              data: [],
+              backgroundColor: [],
+              borderColor: []
+            }
+            // Create a data to display the total reservoir volume
+            rulerData.labels.push('Reservoir')
+            rulerData.data.push(Number.parseFloat(this.reservoir.attributes.volume))
+            rulerData.backgroundColor.push('rgba(75, 192, 192, 0.4)')
+            rulerData.borderColor.push('rgba(75, 192, 192, 0.5)')
+            // Create a data for each result
+            response.data.data.forEach((data) => {
+              rulerData.labels.push(moment(new Date(data.created_at)).format('YYYY-MM-DD HH:mm'))
+              rulerData.data.push(this.getRulerSensorVolume(data.level_sensor_data))
+              rulerData.backgroundColor.push('rgba(190, 190, 190, 0.6)')
+              rulerData.borderColor.push('rgba(190, 190, 190, 0.9)')
+            })
+            // Set all data ($set is used because this is the only way to say to vue.js to refresh interface with this data)
+            this.$set(this.rulerSensorsDataHistory.labels, ruler.id, rulerData.labels)
+            this.$set(this.rulerSensorsDataHistory.data, ruler.id, rulerData.data)
+            this.$set(this.rulerSensorsDataHistory.backgroundColor, ruler.id, rulerData.backgroundColor)
+            this.$set(this.rulerSensorsDataHistory.borderColor, ruler.id, rulerData.borderColor)
+          })
+          .catch((error) => {
+            console.log('Ruler sensors data request error!')
+            console.log(error)
+          })
+      })
     },
     getRulerSensorVolume (levelSensorData) {
       if (!levelSensorData) {
@@ -486,14 +546,6 @@ export default {
       }
       // Ruler maximum volume
       return rulerData.length === 0 ? 0 : Math.max.apply(null, rulerData)
-    },
-    getRandomColor () {
-      let letters = '0123456789ABCDEF'.split('')
-      let color = '#'
-      for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)]
-      }
-      return color
     },
     generateSettings (device) {
       this.settings.show = true
