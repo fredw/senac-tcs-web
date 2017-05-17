@@ -47,9 +47,10 @@ heroku static:deploy
 ```
 
 
-TODO
+TODO and Improvements
 ------------------------------------------------------------
 - [ ] Implement tests
+- [ ] Display some useful data on home page
 - [ ] Implement administration (CRUD) for: customers, users, reservoirs, devices, sensors
 
 
