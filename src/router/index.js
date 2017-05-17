@@ -43,7 +43,7 @@ export default new Router({
       meta: { title: 'Reservoirs', requiresAuth: true }
     },
     {
-      path: '/reservoirs/:reservoir/devices',
+      path: '/reservoirs/:reservoir',
       name: 'device.list',
       component: DeviceList,
       meta: { title: 'Devices', requiresAuth: true }

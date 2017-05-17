@@ -6,13 +6,14 @@
       <v-breadcrumbs-item>Reservoirs</v-breadcrumbs-item>
     </v-breadcrumbs>
 
+    <!-- Filter -->
     <v-card class="filter" v-show="reservoirs.length > 0 || loaded === true">
       <v-card-row class="grey lighten-4">
         <v-card-title><small>Filters</small></v-card-title>
       </v-card-row>
       <v-card-text>
         <v-row row>
-          <v-col xs6>
+          <v-col xs12 md6>
             <v-select
               :items="getFilterReservoirsGroups"
               v-model="filters.reservoirsGroup"
@@ -26,8 +27,10 @@
       </v-card-text>
     </v-card>
 
+    <!-- Loading -->
     <v-progress-linear v-bind:indeterminate="true" v-show="loading === true"></v-progress-linear>
 
+    <!-- No records -->
     <v-alert warning v-show="reservoirs.length == 0 && loaded === true" class="yellow darken-3">There are no reservoirs to display</v-alert>
 
     <v-row>
@@ -102,7 +105,7 @@ export default {
     page: function () {
       this.list()
     },
-    'filters.reservoirsGroup': function (group) {
+    'filters.reservoirsGroup' () {
       this.list()
     }
   },
@@ -136,21 +139,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.card.filter {
-  margin-bottom: 15px;
-
-  .card__title {
-    padding: 10px;
-  }
-
-  .input-group {
-    margin-bottom: 0;
-  }
-
-  .btn {
-    margin-top: 0;
-  }
-}
 .reservoir {
   margin-bottom: 15px;
 

@@ -98,4 +98,22 @@ body {
 .card__title {
   letter-spacing: 0 !important;
 }
+
+/* Card filter */
+
+.card.filter {
+  margin-bottom: 15px;
+
+  .card__title {
+    padding: 10px;
+  }
+
+  .input-group {
+    margin-bottom: 0;
+  }
+
+  .btn {
+    margin-top: 0;
+  }
+}
 </style>
