@@ -43,6 +43,13 @@ heroku static:init
 heroku static:deploy
 ```
 
+
+TODO
+------------------------------------------------------------
+- [ ] Implement tests
+- [ ] Implement administration (CRUD) for: customers, users, reservoirs, devices, sensors
+
+
 Credits
 ------------------------------------------------------------
 

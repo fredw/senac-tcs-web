@@ -6,9 +6,29 @@
       <v-breadcrumbs-item>Reservoirs</v-breadcrumbs-item>
     </v-breadcrumbs>
 
-    <v-progress-linear v-bind:indeterminate="true" v-show="loaded === false"></v-progress-linear>
+    <v-card class="filter" v-show="reservoirs.length > 0 || loaded === true">
+      <v-card-row class="grey lighten-4">
+        <v-card-title><small>Filters</small></v-card-title>
+      </v-card-row>
+      <v-card-text>
+        <v-row row>
+          <v-col xs6>
+            <v-select
+              :items="getFilterReservoirsGroups"
+              v-model="filters.reservoirsGroup"
+              label="Reservoir group"
+              light
+              hide-details
+              auto
+            />
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
 
-    <v-alert warning v-show="reservoirs.length == 0 && loaded === true" class="yellow darken-3">There are no registered reservoirs</v-alert>
+    <v-progress-linear v-bind:indeterminate="true" v-show="loading === true"></v-progress-linear>
+
+    <v-alert warning v-show="reservoirs.length == 0 && loaded === true" class="yellow darken-3">There are no reservoirs to display</v-alert>
 
     <v-row>
       <v-col xs12 sm6 md4 v-for="reservoir in reservoirs" :key="reservoir.id">
@@ -26,7 +46,7 @@
               <v-avatar>
                 <v-icon>group_work</v-icon>
               </v-avatar>
-              {{ reservoirsGroups[reservoir.relationships['reservoir-group'].data.id].attributes.name }}
+              {{ getReservoirGroupName(reservoir) }}
             </v-chip>
             <v-spacer></v-spacer>
             <v-btn flat class="green--text darken-1" :router="true" :href="{ name: 'device.list', params: { reservoir: reservoir.id } }">View Devices</v-btn>
@@ -45,47 +65,92 @@ export default {
   data () {
     return {
       loaded: false,
+      loading: true,
       reservoirs: [],
       reservoirsGroups: [],
+      filters: {
+        reservoirsGroup: ''
+      },
       page: 1,
       perPage: 6,
       pageCount: 0
     }
   },
+  computed: {
+    getFilterReservoirsGroups () {
+      let options = []
+      options.push({value: '', text: '[None]'})
+      this.reservoirsGroups.map((group) => {
+        options.push({
+          value: group.id,
+          text: group.attributes.name
+        })
+      })
+      return options
+    }
+  },
   created () {
+    // Reservoirs groups (filter)
+    this.$http.get(`reservoir_groups`)
+      .then((response) => {
+        this.reservoirsGroups = response.data.data
+      })
+    // Reservoirs
     this.list()
   },
   watch: {
     page: function () {
       this.list()
+    },
+    'filters.reservoirsGroup': function (group) {
+      this.list()
     }
   },
   methods: {
     list () {
-      this.$http.get(`reservoirs?page=${this.page}&per_page=${this.perPage}`)
+      this.loading = true
+      let reservoirsGroup = this.filters.reservoirsGroup ? this.filters.reservoirsGroup.value : ''
+      this.$http.get(`reservoirs?page=${this.page}&per_page=${this.perPage}&reservoir_group=${reservoirsGroup}`)
         .then((response) => {
           this.reservoirs = response.data.data
           this.perPage = response.headers['per-page']
           this.pageCount = Math.ceil(response.headers['total'] / this.perPage)
-
-          let reservoirsGroups = response.data.included.filter((object) => object.type === 'reservoir-groups')
-          reservoirsGroups.forEach((reservoirGroup) => {
-            this.reservoirsGroups[reservoirGroup.id] = reservoirGroup
-          })
         })
         .catch((error) => {
           console.log('Reservoirs request error!')
           console.log(error)
         })
         .then(() => {
+          this.loading = false
           this.loaded = true
         })
+    },
+    getReservoirGroupName (reservoir) {
+      let group = this.reservoirsGroups.filter((group) => group.id === reservoir.relationships['reservoir-group'].data.id)
+      if (group) {
+        return group[0].attributes.name
+      }
     }
   }
 }
 </script>
 
 <style scoped lang="scss">
+.card.filter {
+  margin-bottom: 15px;
+
+  .card__title {
+    padding: 10px;
+  }
+
+  .input-group {
+    margin-bottom: 0;
+  }
+
+  .btn {
+    margin-top: 0;
+  }
+}
 .reservoir {
   margin-bottom: 15px;
 
