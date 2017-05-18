@@ -4,8 +4,10 @@ export default {
 
   login (context, data, redirect) {
     this.reset(context)
+    // Remove token from local storage to not pass the token on request
+    localStorage.removeItem('token')
     context.loading = true
-    context.$http.post('users/sign_in', data, { headers: { Authorization: '' } })
+    context.$http.post('users/sign_in', data)
       .then((response) => {
         let authorization = response.headers.authorization
         // Set token and user id on local storage and store
@@ -50,8 +52,10 @@ export default {
 
   forgotPassword (context, data) {
     this.reset(context)
+    // Remove token from local storage to not pass the token on request
+    localStorage.removeItem('token')
     context.loadingForgotPassword = true
-    context.$http.post('users/password', data, { headers: { Authorization: null } })
+    context.$http.post('users/password', data)
       .then(() => {
         context.info = {
           show: true,
@@ -73,7 +77,9 @@ export default {
 
   changePassword (context, data) {
     this.reset(context)
-    context.$http.put('users/password', data, { headers: { Authorization: null } })
+    // Remove token from local storage to not pass the token on request
+    localStorage.removeItem('token')
+    context.$http.put('users/password', data)
       .then(() => {
         context.success = 'Your password was changed! Go back to login.'
       })
